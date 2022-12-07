@@ -1,5 +1,48 @@
 import react from 'react'
 import { createMachine, assign } from "xstate";
+import { fetchCountries } from '../utils/api';
+
+const fillCountries = {
+  initial: 'idle',
+  states: {
+    idle: {
+      on: {
+        FETCH: {
+          target: 'loading',
+        }
+      }
+    },
+    loading: {
+      invoke: { //invocar servicios
+        id: 'getCountries',
+        src: (context, event) => fetchCountries,
+        onDone: {
+          target: 'success',
+          actions: assign({
+            countries: (context, event) => {
+              return event.data
+            },
+          })
+        },
+        onError: {
+          target: 'failure',
+          actions: assign({
+            error: 'Fallo en el request de paises'
+          })
+        }
+      },
+    },
+    success: {
+    },
+    failure: {
+      on: {
+        RETRY: {
+          target: 'loading'
+        },
+      },
+    },
+  },
+};
 
 const bookingMachine = createMachine({
   predictableActionArguments: true,
@@ -8,6 +51,8 @@ const bookingMachine = createMachine({
   context: {
     passengers: [],
     selectedCountry: "",
+    countries: [],
+    error: ''
   },
   states: {
     initial: {
@@ -27,10 +72,14 @@ const bookingMachine = createMachine({
         },
         CANCEL: "initial",
       },
+      ...fillCountries,
     },
     passengers: {
       on: {
-        DONE: "tickets",
+        DONE: {
+          target: "tickets",
+          cond: "moreThanOnePassenger"
+        },
         CANCEL: {
           target: "initial",
           actions: 'resetContext'
@@ -53,6 +102,12 @@ const bookingMachine = createMachine({
       },
     },
     tickets: {
+      after: {
+        5000: {
+          target: 'initial',
+          actions: 'resetContext'
+        }
+      },
       on: {
         FINISH: "initial",
       },
@@ -66,10 +121,13 @@ const bookingMachine = createMachine({
         selectedCountry: ""
       }),
     },
+    guards: {
+      moreThanOnePassenger: (context) => {
+        return context.passengers.length > 0;
+      }
+    }
   }
 );
-
-
 
 export { bookingMachine };
 

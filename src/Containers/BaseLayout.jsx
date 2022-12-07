@@ -9,7 +9,7 @@ const BaseLayout = () => {
   const [ state, send ] = useMachine(bookingMachine);
 
   // console.log('objeto machine', state);
-  console.log('nuestra machine', state.value, state.context);
+  // console.log('nuestra machine', state.value, state.context);
 
   return (
     <div className="BaseLayout">

@@ -1,0 +1,8 @@
+import axios from 'axios';
+
+const fetchCountries = () => {
+  return fetch('https://restcountries.com/v3.1/region/ame')
+    .then((response) => response.json());
+}
+
+export { fetchCountries };

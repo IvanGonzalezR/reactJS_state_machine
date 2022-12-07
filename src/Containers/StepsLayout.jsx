@@ -11,10 +11,10 @@ const StepsLayout = ({ state, send }) => {
       return <Welcome send={send} />;
     }
     if (state.matches('search')) {
-      return <Search send={send} />;
+      return <Search send={send} state={state} />;
     }
     if (state.matches('tickets')) {
-      return <Tickets send={send} />;
+      return <Tickets send={send} context={state.context} />;
     }
     if (state.matches('passengers')) {
       return <Passengers send={send} state={state} />;
